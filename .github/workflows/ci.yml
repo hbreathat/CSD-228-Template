@@ -28,6 +28,7 @@ jobs:
           restore-keys: |
               ${{ runner.os }}-pub-
 
+  # Formats the dart code and fails if there are any changes need to be made.
   fmt:
     needs: precache
     runs-on: ubuntu-latest
@@ -40,6 +41,7 @@ jobs:
           cache: 'true'
       - run: dart format **/*.dart --set-exit-if-changed
 
+  # Ensures that the submitted Dart code has follows the recommend list of linter rules.
   lint:
     needs: precache
     runs-on: ubuntu-latest
@@ -64,6 +66,7 @@ jobs:
       - run: flutter pub get
       - run: dart analyze ./${{ matrix.project }}/**/
 
+  # Run all the unit tests within the "projects" non-sequentially. 
   unit-tests:
     needs: precache
     runs-on: ubuntu-latest
@@ -86,3 +89,42 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pub-
       - run: flutter test ./${{ matrix.project }}/**/
+  
+  # Compresses the lecture dart files into a zip file for submission.
+  compress-lecture-submission:
+    if: contains(github.event.pull_request.labels.*.name, 'lab')
+    runs-on: ubuntu-latest
+    name: Compress ${{ matrix.lecture }}
+    strategy:
+      matrix:
+        # With each new lecture we walk through this will have a new value added to ensure that the CI system is able to pick up the changes
+        lecture: ['']
+    steps:
+      - uses: actions/checkout@v6
+        # Zip dart file changes
+      - run: zip ${{ matrix.lecture }}.zip ./${{ matrix.lecture }}/**/*.dart
+        working-directory: Lectures/
+      - uses: actions/upload-artifact@master
+        with:
+          path: Lectures/${{ matrix.lecture }}/${{ matrix.lecture }}.zip
+  
+  # A similar job to compress-lecture-submission. 
+  # 
+  # The only exceptions are:
+  # - all files are captured
+  # - Assignments directory is the base directory
+  compress-assignment-submission:
+    if: contains(github.event.pull_request.labels.*.name, 'assignment')
+    runs-on: ubuntu-latest
+    name: Compress ${{ matrix.assignment }}
+    strategy:
+      matrix:
+        assignment: ['']
+    steps:
+      - uses: actions/checkout@v6
+        # Zip dart file changes
+      - run: zip ${{ matrix.assignment }}.zip ./${{ matrix.assignment }}/**/*
+        working-directory: Assignments/
+      - uses: actions/upload-artifact@master
+        with:
+          path: Assignments/${{ matrix.assignment }}/${{ matrix.assignment }}.zip
