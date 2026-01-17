@@ -52,7 +52,7 @@ WORKDIR /opt
 
 RUN mkdir -p android-sdk && \
     chmod -R 775 android-sdk && \
-    chown -R root:${USERNAME} android-sdk \
+    chown -R root:${USERNAME} android-sdk
 
 # Flutter requires at least API 36.0
 ARG ANDROID_SDK_VERSION=36
@@ -63,9 +63,9 @@ COPY cmdline-tools ${ANDROID_HOME}/cmdline-tools/latest/
 ENV PATH="${ANDROID_HOME}/cmdline-tools/latest/bin:${PATH}"
 
 RUN echo "y" | sdkmanager --install --sdk_root="${ANDROID_HOME}" \
-    "platforms;android-${ANDRIOD_SDK_VERSION}" \
-    "build-tools;${ANDRIOD_SDK_VERSION}.0.0" \
-    "platform-tools" \
+    "platforms;android-${ANDROID_SDK_VERSION}" \
+    "build-tools;${ANDROID_SDK_VERSION}.0.0" \
+    "platform-tools"
 
 # Ensure that all licenses have required acceptances as root.
 RUN yes | sdkmanager --licenses
